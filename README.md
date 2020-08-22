@@ -5,7 +5,7 @@
 ### [stufield.github.io/COVID-19](https://stufield.github.io/COVID-19)
 -->
 
-# The Monty Hall Paradox
+# [The Monty Hall Paradox](https://stufield.github.io/monty-hall-paradox)
 
 Suppose you’re on a game show, and you’re given the choice of three
 doors: Behind one door is a car; behind the others are goats. You pick a
@@ -53,6 +53,7 @@ door `C`. The posterior probability of door `B` is updated from 0.33 -\>
 |  Goat  |  Goat  |  Car   |   Wins goat   |    Wins car     |
 |  Goat  |  Car   |  Goat  |   Wins goat   |    Wins car     |
 |  Car   |  Goat  |  Goat  |   Wins car    |    Wins goat    |
+|        |        |        | P(car) = 1/3  |  P(car) = 2/3   |
 
 #### Visual: probability tree
 
@@ -85,7 +86,7 @@ sim_res <- tibble::tibble(
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
   prob_switch_win = sum_switch_wins / (sum_switch_wins + sum_stay_wins),
-  prob_stay_win = 1 - prob_switch_win
+  prob_stay_win   = 1 - prob_switch_win
 )
 
 # simulation results
@@ -109,8 +110,8 @@ sim_res
 ### Plot Simulations
 
 ``` r
-plotsim <- tidyr::pivot_longer(
-  sim_res,
+plotsim <- sim_res %>%
+  tidyr::pivot_longer(
   cols     = c(sum_switch_wins, sum_stay_wins),
   names_to = "strategy", values_to = "Wins"
 )
@@ -122,9 +123,9 @@ p1 <- plotsim %>%
   labs(y = "Cumulative Wins", x = "Trial") +
   theme(legend.position = "top")
 
-plotsim <- tidyr::pivot_longer(
-  sim_res,
-  cols = c(prob_switch_win, prob_stay_win),
+plotsim <- sim_res %>%
+  tidyr::pivot_longer(
+  cols     = c(prob_switch_win, prob_stay_win),
   names_to = "strategy", values_to = "prob"
 )
 
