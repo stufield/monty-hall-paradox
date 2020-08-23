@@ -1,19 +1,18 @@
 
-mh <- function() {
-  true       <- sample(doors, 1)                 # true correct door
-  choose     <- sample(doors, 1)                 # player's door choice: 1/3
-  notchoose  <- doors[doors != choose]           # doors not chosen
-  switch_win <- as.numeric(true %in% notchoose)  # if truth not chosen; win by switching
-  switch_win
+# Single Monty-Hall trial; win by switching?
+mh_switch_win <- function() {
+  true   <- sample(1:3, 1)
+  choose <- sample(1:3, 1)
+  # if correct door not chosen; player wins by switching (TRUE/FALSE)
+  true != choose
 }
 
-doors  <- LETTERS[1:3]
 trials <- 100
 set.seed(8327)
 sim_res <- tibble::tibble(
   n_sim           = seq_len(trials),
-  switch_win      = replicate(n = trials, mh()),
-  stay_win        = 1 - switch_win,
+  switch_win      = replicate(n = trials, mh_switch_win()),
+  stay_win        = !switch_win,
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
   prob_switch_win = sum_switch_wins / (sum_switch_wins + sum_stay_wins),
@@ -39,9 +38,8 @@ p2 <- sim_res %>%
   geom_line(size = 1.25) +
   ylim(c(0, 1)) +
   geom_hline(yintercept = sim_res$prob_switch_win[trials], linetype = "dashed") +
-  labs(y = "P(success)", x = "Trial Sim") +
   labs(y = "P(win)", x = "Trial",
-       subtitle = sprintf("P(switch) = %0.2f", sim_res$prob_switch_win[trials])) +
+       subtitle = sprintf("P(switch win) = %0.2f", sim_res$prob_switch_win[trials])) +
   ggtitle("Probability of Winning by Strategy")
 
 gridExtra::grid.arrange(p1, p2, ncol = 2)

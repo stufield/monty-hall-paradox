@@ -68,21 +68,19 @@ Perhaps the easiest way to visualize the solution is through simulation.
 ### Code
 
 ``` r
-# run a single Monty-Hall trial
-mh <- function() {
-  true       <- sample(doors, 1)                 # true correct door
-  choose     <- sample(doors, 1)                 # player's door choice: 1/3
-  notchoose  <- doors[doors != choose]           # doors not chosen
-  switch_win <- as.numeric(true %in% notchoose)  # if truth not chosen; win by switching
-  switch_win
+# Single Monty-Hall trial; win by switching?
+mh_switch_win <- function() {
+  true   <- sample(1:3, 1)     # true correct door; 3 possible doors
+  choose <- sample(1:3, 1)     # player's door choice: 1/3
+  # if player choses incorrect door; player wins by switching (TRUE/FALSE)
+  true != choose
 }
 
-doors   <- LETTERS[1:3]                          # doors 'A', 'B', and 'C'
-trials  <- 150                                   # number of trials
+trials  <- 1000                        # number of trials
 sim_res <- tibble::tibble(
   n_sim           = seq_len(trials),
-  switch_win      = replicate(n = trials, mh()),
-  stay_win        = 1 - switch_win,
+  switch_win      = replicate(n = trials, mh_switch_win()),
+  stay_win        = !switch_win,
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
   prob_switch_win = sum_switch_wins / (sum_switch_wins + sum_stay_wins),
@@ -91,25 +89,26 @@ sim_res <- tibble::tibble(
 
 # simulation results
 sim_res
-#> # A tibble: 150 x 7
-#>    n_sim switch_win stay_win sum_switch_wins sum_stay_wins prob_switch_win
-#>    <int>      <dbl>    <dbl>           <dbl>         <dbl>           <dbl>
-#>  1     1          1        0               1             0           1    
-#>  2     2          0        1               1             1           0.5  
-#>  3     3          1        0               2             1           0.667
-#>  4     4          0        1               2             2           0.5  
-#>  5     5          1        0               3             2           0.6  
-#>  6     6          0        1               3             3           0.5  
-#>  7     7          1        0               4             3           0.571
-#>  8     8          0        1               4             4           0.5  
-#>  9     9          0        1               4             5           0.444
-#> 10    10          1        0               5             5           0.5  
-#> # … with 140 more rows, and 1 more variable: prob_stay_win <dbl>
+#> # A tibble: 1,000 x 7
+#>    n_sim switch_win stay_win sum_switch_wins sum_stay_wins prob_switch_win prob_stay_win
+#>    <int> <lgl>      <lgl>              <int>         <int>           <dbl>         <dbl>
+#>  1     1 TRUE       FALSE                  1             0           1             0    
+#>  2     2 FALSE      TRUE                   1             1           0.5           0.5  
+#>  3     3 TRUE       FALSE                  2             1           0.667         0.333
+#>  4     4 FALSE      TRUE                   2             2           0.5           0.5  
+#>  5     5 TRUE       FALSE                  3             2           0.6           0.4  
+#>  6     6 FALSE      TRUE                   3             3           0.5           0.5  
+#>  7     7 TRUE       FALSE                  4             3           0.571         0.429
+#>  8     8 FALSE      TRUE                   4             4           0.5           0.5  
+#>  9     9 FALSE      TRUE                   4             5           0.444         0.556
+#> 10    10 TRUE       FALSE                  5             5           0.5           0.5  
+#> # … with 990 more rows
 ```
 
 ### Plot Simulations
 
 ``` r
+# Cumulative wins
 plotsim <- sim_res %>%
   tidyr::pivot_longer(
   cols     = c(sum_switch_wins, sum_stay_wins),
@@ -118,11 +117,11 @@ plotsim <- sim_res %>%
 
 p1 <- plotsim %>%
   ggplot(aes(x = n_sim, y = Wins, color = strategy)) +
-  geom_line(size = 1.5) +
-  ggtitle("Cumulative Wins by Strategy") +
+  geom_line(size = 1) +
   labs(y = "Cumulative Wins", x = "Trial") +
-  theme(legend.position = "top")
+  ggtitle("Cumulative Wins by Strategy")
 
+# Prob winning
 plotsim <- sim_res %>%
   tidyr::pivot_longer(
   cols     = c(prob_switch_win, prob_stay_win),
@@ -131,11 +130,11 @@ plotsim <- sim_res %>%
 
 p2 <- plotsim %>%
   ggplot(aes(x = n_sim, y = prob, color = strategy)) +
-  geom_line(size = 1.25) +
+  geom_line(size = 1) +
   ylim(c(0, 1)) +
   geom_hline(yintercept = sim_res$prob_switch_win[trials], linetype = "dashed") +
   labs(y = "P(win)", x = "Trial",
-       subtitle = sprintf("P(switch) = %0.2f", sim_res$prob_switch_win[trials])) +
+       subtitle = sprintf("P(switch win) = %0.2f", sim_res$prob_switch_win[trials])) +
   ggtitle("Probability of Winning by Strategy")
 
 gridExtra::grid.arrange(p1, p2, ncol = 2)
