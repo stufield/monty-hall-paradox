@@ -1,1 +1,5 @@
+title: Monty Hall Paradox
+description: Attempt to explain the Monty Hall paradox with a simple simulation
+show_downloads: true
+google_analytics:
 theme: jekyll-theme-dinky
