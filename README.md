@@ -48,6 +48,11 @@ probability of door `B` with the knowldege that the car is *not* behind
 door `C`. The posterior probability of door `B` is updated from 0.33 -\>
 0.66 following the reveal that door `C` is not an option.
 
+The problem can be reduced to a binary problem (switch or stay):
+
+1.  The player chooses correctly and loses by switching (1/3)
+2.  The player chooses incorrectly and wins by switching (2/3)
+
 | Door A | Door B | Door C | Stay Strategy | Switch Strategy |
 | :----: | :----: | :----: | :-----------: | :-------------: |
 |  Goat  |  Goat  |  Car   |   Wins goat   |    Wins car     |
@@ -56,6 +61,8 @@ door `C`. The posterior probability of door `B` is updated from 0.33 -\>
 |        |        |        | P(car) = 1/3  |  P(car) = 2/3   |
 
 #### Visual: probability tree
+
+The bifrucated tree below assumes the player has chosen Door 1:
 
 ![](monty-hall-tree.png)
 
@@ -75,11 +82,26 @@ mh_switch_win <- function() {
   # if player choses incorrect door; player wins by switching (TRUE/FALSE)
   true != choose
 }
+```
 
+**Once you convince yourself that the probability of winning by**
+**switching is the same as the probability of choosing incorrectly,**
+**i.e. 1 - 1/3, the function can be simplified further.**
+
+``` r
+mh_switch_win <- function() {
+  runif(1) > 1/3
+}
+```
+
+Run the simulation with the `runif()` function directly rather than
+`mh_switch_win()`:
+
+``` r
 trials  <- 1000                        # number of trials
 sim_res <- tibble::tibble(
   n_sim           = seq_len(trials),
-  switch_win      = replicate(n = trials, mh_switch_win()),
+  switch_win      = runif(trials) > 1/3,
   stay_win        = !switch_win,
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
@@ -93,15 +115,15 @@ sim_res
 #>    n_sim switch_win stay_win sum_switch_wins sum_stay_wins prob_switch_win prob_stay_win
 #>    <int> <lgl>      <lgl>              <int>         <int>           <dbl>         <dbl>
 #>  1     1 TRUE       FALSE                  1             0           1             0    
-#>  2     2 FALSE      TRUE                   1             1           0.5           0.5  
-#>  3     3 TRUE       FALSE                  2             1           0.667         0.333
-#>  4     4 FALSE      TRUE                   2             2           0.5           0.5  
-#>  5     5 TRUE       FALSE                  3             2           0.6           0.4  
-#>  6     6 FALSE      TRUE                   3             3           0.5           0.5  
-#>  7     7 TRUE       FALSE                  4             3           0.571         0.429
-#>  8     8 FALSE      TRUE                   4             4           0.5           0.5  
-#>  9     9 FALSE      TRUE                   4             5           0.444         0.556
-#> 10    10 TRUE       FALSE                  5             5           0.5           0.5  
+#>  2     2 TRUE       FALSE                  2             0           1             0    
+#>  3     3 TRUE       FALSE                  3             0           1             0    
+#>  4     4 TRUE       FALSE                  4             0           1             0    
+#>  5     5 TRUE       FALSE                  5             0           1             0    
+#>  6     6 FALSE      TRUE                   5             1           0.833         0.167
+#>  7     7 TRUE       FALSE                  6             1           0.857         0.143
+#>  8     8 FALSE      TRUE                   6             2           0.75          0.25 
+#>  9     9 FALSE      TRUE                   6             3           0.667         0.333
+#> 10    10 TRUE       FALSE                  7             3           0.7           0.3  
 #> # … with 990 more rows
 ```
 

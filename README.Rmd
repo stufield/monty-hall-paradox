@@ -27,7 +27,7 @@ thm <- ggplot2::theme_bw(base_size = 11, base_family = "") +
     plot.subtitle     = element_text(hjust = 0.5)
   )
 theme_set(thm)
-set.seed(8327)
+set.seed(833)
 ```
 
 <!--
@@ -72,7 +72,12 @@ door to the remaining unrevealed and unchosen door. In a way this represents a
 Bayesian update to the probability of door `B` with the knowldege that
 the car is *not* behind door `C`. The posterior probability of door `B`
 is updated from 0.33 -> 0.66 following the reveal that door `C` is not
-an option.
+an option. 
+
+The problem can be reduced to a binary problem (switch or stay):
+
+1. The player chooses correctly and loses by switching (1/3)
+1. The player chooses incorrectly and wins by switching (2/3)
 
 | Door A | Door B | Door C | Stay Strategy | Switch Strategy |
 |:------:|:------:|:------:|:-------------:|:---------------:|
@@ -82,16 +87,17 @@ an option.
 |        |        |        | P(car) = 1/3  | P(car) = 2/3    |
 
 #### Visual: probability tree
+The bifrucated tree below assumes the player has chosen Door 1:
 
 ![](monty-hall-tree.png)
 
 ----------
 
 ## Simple Simulation
-Perhaps the easiest way to visualize the solution is through simulation.
+Perhaps the easiest way to visualize the solution is through simulation. 
 
 ### Code
-```{r code}
+```{r code, eval = FALSE}
 # Single Monty-Hall trial; win by switching?
 mh_switch_win <- function() {
   true   <- sample(1:3, 1)     # true correct door; 3 possible doors
@@ -99,11 +105,26 @@ mh_switch_win <- function() {
   # if player choses incorrect door; player wins by switching (TRUE/FALSE)
   true != choose
 }
+```
 
+**Once you convince yourself that the probability of winning by**
+**switching is the same as the probability of choosing incorrectly,**
+**i.e. 1 - 1/3, the function can be simplified further.**
+
+```{r code2, eval = FALSE}
+mh_switch_win <- function() {
+  runif(1) > 1/3
+}
+```
+
+Run the simulation with the `runif()` function directly rather 
+than `mh_switch_win()`:
+
+```{r sim}
 trials  <- 1000                        # number of trials
 sim_res <- tibble::tibble(
   n_sim           = seq_len(trials),
-  switch_win      = replicate(n = trials, mh_switch_win()),
+  switch_win      = runif(trials) > 1/3,
   stay_win        = !switch_win,
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
