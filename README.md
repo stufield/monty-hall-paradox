@@ -1,10 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<!--
-### [stufield.github.io/COVID-19](https://stufield.github.io/COVID-19)
--->
-
 # [The Monty Hall Paradox](https://stufield.github.io/monty-hall-paradox)
 
 Suppose you’re on a game show, and you’re given the choice of three
@@ -34,7 +30,7 @@ so the assumption of independence does not hold. As we see below,
 breaking the independence assumption drastically alters the
 probabilities of the remaining unrevealed doors.
 
------
+------------------------------------------------------------------------
 
 ### Solution
 
@@ -54,7 +50,7 @@ The problem can be reduced to a binary problem (switch or stay):
 2.  The player chooses incorrectly and wins by switching (2/3)
 
 | Door A | Door B | Door C | Stay Strategy | Switch Strategy |
-| :----: | :----: | :----: | :-----------: | :-------------: |
+|:------:|:------:|:------:|:-------------:|:---------------:|
 |  Goat  |  Goat  |  Car   |   Wins goat   |    Wins car     |
 |  Goat  |  Car   |  Goat  |   Wins goat   |    Wins car     |
 |  Car   |  Goat  |  Goat  |   Wins car    |    Wins goat    |
@@ -66,7 +62,7 @@ The bifrucated tree below assumes the player has chosen Door 1:
 
 ![](monty-hall-tree.png)
 
------
+------------------------------------------------------------------------
 
 ## Simple Simulation
 
@@ -77,20 +73,21 @@ Perhaps the easiest way to visualize the solution is through simulation.
 ``` r
 # Single Monty-Hall trial; win by switching?
 mh_switch_win <- function() {
-  true   <- sample(1:3, 1)     # true correct door; 3 possible doors
-  choose <- sample(1:3, 1)     # player's door choice: 1/3
-  # if player choses incorrect door; player wins by switching (TRUE/FALSE)
+  true   <- sample(1:3, 1L)    # true correct door; 3 possible doors
+  choose <- sample(1:3, 1L)    # player's door choice: 1/3
+  # if player choses incorrect door,
+  # player wins by switching (TRUE/FALSE)
   true != choose
 }
 ```
 
-**Once you convince yourself that the probability of winning by**
-**switching is the same as the probability of choosing incorrectly,**
-**i.e. 1 - 1/3, the function can be simplified further.**
+\|\> Once you convince yourself that the probability of winning by \|\>
+switching is the same as the probability of choosing incorrectly, \|\>
+i.e. 1 - 1/3, the function can be simplified further.
 
 ``` r
 mh_switch_win <- function() {
-  runif(1) > 1/3
+  runif(1) > 1 / 3
 }
 ```
 
@@ -98,10 +95,10 @@ Run the simulation with the `runif()` function directly rather than
 `mh_switch_win()`:
 
 ``` r
-trials  <- 1000                        # number of trials
-sim_res <- tibble::tibble(
+trials  <- 1000
+sim_tbl <- tibble::tibble(
   n_sim           = seq_len(trials),
-  switch_win      = runif(trials) > 1/3,
+  switch_win      = withr::with_seed(833, runif(trials) > 1 / 3),
   stay_win        = !switch_win,
   sum_switch_wins = cumsum(switch_win),
   sum_stay_wins   = cumsum(stay_win),
@@ -110,8 +107,8 @@ sim_res <- tibble::tibble(
 )
 
 # simulation results
-sim_res
-#> # A tibble: 1,000 x 7
+sim_tbl
+#> # A tibble: 1,000 × 7
 #>    n_sim switch_win stay_win sum_switch_wins sum_stay_wins prob_switch_win prob_stay_win
 #>    <int> <lgl>      <lgl>              <int>         <int>           <dbl>         <dbl>
 #>  1     1 TRUE       FALSE                  1             0           1             0    
@@ -124,53 +121,53 @@ sim_res
 #>  8     8 FALSE      TRUE                   6             2           0.75          0.25 
 #>  9     9 FALSE      TRUE                   6             3           0.667         0.333
 #> 10    10 TRUE       FALSE                  7             3           0.7           0.3  
-#> # … with 990 more rows
+#> # ℹ 990 more rows
 ```
 
 ### Plot Simulations
 
 ``` r
 # Cumulative wins
-plotsim <- sim_res %>%
+plot_df <- sim_tbl |>
   tidyr::pivot_longer(
   cols     = c(sum_switch_wins, sum_stay_wins),
   names_to = "strategy", values_to = "Wins"
 )
 
-p1 <- plotsim %>%
+p1 <- plot_df |>
   ggplot(aes(x = n_sim, y = Wins, color = strategy)) +
   geom_line(size = 1) +
   labs(y = "Cumulative Wins", x = "Trial") +
   ggtitle("Cumulative Wins by Strategy")
+#> Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+#> ℹ Please use `linewidth` instead.
+#> This warning is displayed once every 8 hours.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 
 # Prob winning
-plotsim <- sim_res %>%
+plot_df <- sim_tbl |>
   tidyr::pivot_longer(
   cols     = c(prob_switch_win, prob_stay_win),
   names_to = "strategy", values_to = "prob"
 )
 
-p2 <- plotsim %>%
+p2 <- plot_df |>
   ggplot(aes(x = n_sim, y = prob, color = strategy)) +
   geom_line(size = 1) +
   ylim(c(0, 1)) +
-  geom_hline(yintercept = sim_res$prob_switch_win[trials], linetype = "dashed") +
+  geom_hline(yintercept = sim_tbl$prob_switch_win[trials], linetype = "dashed") +
   labs(y = "P(win)", x = "Trial",
-       subtitle = sprintf("P(switch win) = %0.2f", sim_res$prob_switch_win[trials])) +
+       subtitle = sprintf("P(switch win) = %0.2f", sim_tbl$prob_switch_win[trials])) +
   ggtitle("Probability of Winning by Strategy")
 
-gridExtra::grid.arrange(p1, p2, ncol = 2)
+p1 + p2
 ```
 
 ![](figs/README-plot-sim-1.png)<!-- -->
 
------
+------------------------------------------------------------------------
 
 ### Links
 
 <https://en.wikipedia.org/wiki/Monty_Hall_problem>
-
------
-
-Created by [Rmarkdown](https://github.com/rstudio/rmarkdown) (v2.1) and
-R version 3.6.3 (2020-02-29).
