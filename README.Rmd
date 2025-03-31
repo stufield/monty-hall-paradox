@@ -30,6 +30,8 @@ thm <- ggplot2::theme_bw(base_size = 11, base_family = "") +
 theme_set(thm)
 ```
 
+
+
 # [The Monty Hall Paradox](https://stufield.github.io/monty-hall-paradox)
 
 Suppose you're on a game show, and you're given the choice of three doors:
@@ -98,7 +100,8 @@ The bifrucated tree below assumes the player has chosen Door 1:
 Perhaps the easiest way to visualize the solution is through simulation. 
 
 ### Code
-```{r code, eval = FALSE}
+
+```{r mh-code, eval = FALSE}
 # Single Monty-Hall trial; win by switching?
 mh_switch_win <- function() {
   true   <- sample(1:3, 1L)    # true correct door; 3 possible doors
@@ -109,12 +112,11 @@ mh_switch_win <- function() {
 }
 ```
 
-
 |> Once you convince yourself that the probability of winning by
 |>   switching is the same as the probability of choosing incorrectly,
 |>   i.e. 1 - 1/3, the function can be simplified further.
 
-```{r code2, eval = FALSE}
+```{r mh-code-simplified, eval = FALSE}
 mh_switch_win <- function() {
   runif(1) > 1 / 3
 }
@@ -123,8 +125,8 @@ mh_switch_win <- function() {
 Run the simulation with the `runif()` function directly rather 
 than `mh_switch_win()`:
 
-```{r simulate}
-trials  <- 1000
+```{r simulation}
+trials  <- 1000L
 sim_tbl <- tibble::tibble(
   n_sim           = seq_len(trials),
   switch_win      = withr::with_seed(833, runif(trials) > 1 / 3),
@@ -140,7 +142,8 @@ sim_tbl
 ```
 
 ### Plot Simulations
-```{r plot-sim, fig.width = 10.5, fig.height = 5}
+
+```{r plot-simulation, fig.width = 10.5, fig.height = 5}
 # Cumulative wins
 plot_df <- sim_tbl |>
   tidyr::pivot_longer(

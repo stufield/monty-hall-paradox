@@ -95,7 +95,7 @@ Run the simulation with the `runif()` function directly rather than
 `mh_switch_win()`:
 
 ``` r
-trials  <- 1000
+trials  <- 1000L
 sim_tbl <- tibble::tibble(
   n_sim           = seq_len(trials),
   switch_win      = withr::with_seed(833, runif(trials) > 1 / 3),
@@ -164,7 +164,7 @@ p2 <- plot_df |>
 p1 + p2
 ```
 
-![](figs/README-plot-sim-1.png)<!-- -->
+![](figs/README-plot-simulation-1.png)<!-- -->
 
 ------------------------------------------------------------------------
 
